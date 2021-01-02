@@ -12,6 +12,7 @@ getState (C x y) = x
 getValue :: Cell -> Value
 getValue (C x y) = y
 
+
 fromJust :: Maybe Int -> Int
 fromJust (Just a) = a
 
@@ -22,6 +23,13 @@ fromJust (Just a) = a
 byInd :: Table -> Int -> Int -> Cell
 byInd table row col = table !! row !! col
 
+replace :: Int ->  Cell -> [Cell] -> [Cell]
+replace x modified old = 
+change_elem :: Table -> Int -> Int -> State -> Table
+change_elem xs row col x =
+    let row_to_replace_in = xs !! row
+        modified_row = replace col x row_to_replace_in
+    in replace row modified_row xs
 v :: Value
 v = Just 5
 
