@@ -23,13 +23,19 @@ fromJust (Just a) = a
 byInd :: Table -> Int -> Int -> Cell
 byInd table row col = table !! row !! col
 
-replace :: Int ->  Cell -> [Cell] -> [Cell]
-replace x modified old = 
-change_elem :: Table -> Int -> Int -> State -> Table
-change_elem xs row col x =
+replace :: Int ->  a -> [a] -> [a]
+replace _ _ [] = []
+replace n newVal (x:xs)
+  | n == 0 = newVal:xs
+  | otherwise = x:replace (n-1) newVal xs
+
+replace_elem :: Table -> Int -> Int -> Cell -> Table
+replace_elem xs row col x =
     let row_to_replace_in = xs !! row
         modified_row = replace col x row_to_replace_in
     in replace row modified_row xs
+
+
 v :: Value
 v = Just 5
 
@@ -80,8 +86,11 @@ main = do putStrLn "Mosaic"
           -- filename <- getFileName
           -- puzzle <- readPuzzle filename
           -- let tablePuzzle = convertToTable puzzle 
-          let val =  table !! 0 !! 0
+          let val =  table !! 1 !! 0
           print (getValue val)
-          print( byInd table 0 0)
+          print( byInd table 1 0)
+          let newtable = replace_elem table 1 0 (C UNDECIDED (Just 3))
+          print (byInd table 1 0)
+          print (byInd newtable 1 0)
           --solvedPuzzle <- solve tablePuzzle
           -- print puzzle
