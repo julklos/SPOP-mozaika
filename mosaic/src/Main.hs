@@ -38,9 +38,6 @@ replace_elem xs row col x =
         modified_row = replace col x row_to_replace_in
     in replace row modified_row xs
 
-
-v :: Value
-v = Just 5
 simplest :: Table
 simplest = [[C UNDECIDED (Just 1), C UNDECIDED (Just 1), C UNDECIDED (Just 1)],
            [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing],
@@ -65,15 +62,15 @@ table = [[C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 5), C UNDE
                 [C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 7), C UNDECIDED (Just 7),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),  C UNDECIDED (Just 1)],
                 [C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED (Just 3), C UNDECIDED Nothing,  C UNDECIDED (Just 8),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing],
                 [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing]]
-
+--pokoloruj na odpowiedni kolor
 colourCells :: State -> [(Int, Int)] -> Table -> Table
 colourCells _ [] table = table
 colourCells color ((x,y):xs) table = let state = getState (byInd table x y)
-                                     in if state /= UNDECIDED then colourCells color xs table
+                                     in if state == BLACK then colourCells color xs table
                                         else let val = getValue (byInd table x y)
                                                  modifiedTable = replace_elem table x y (C color val)
                                              in colourCells color xs modifiedTable
-
+--sprawdz na jaki kolor pokolorowac
 checkIfToColour :: Table -> Int -> Int -> Table
 checkIfToColour table row col = let neighbourhoods = neighbourhoodsList row col table
                                     states = stateList neighbourhoods table
@@ -82,46 +79,55 @@ checkIfToColour table row col = let neighbourhoods = neighbourhoodsList row col 
                                     unds = countState states UNDECIDED
                                     val = fromJust (getValue (byInd table row col))
                                     not_val = length states - val
+                                    next_table = colourCells WHITE neighbourhoods table
                                   in if val - blacks == unds then colourCells BLACK neighbourhoods table
-                                     else if not_val - whites == unds then colourCells WHITE neighbourhoods table
+                                     else if not_val - whites <= unds then colourCells WHITE neighbourhoods table
                                           else table
+--oblicz liczbe wierszy
 tableRows :: Table -> Int
 tableRows table = length table
+--oblicz liczbe kolumn
 tableCols :: Table -> Int
 tableCols table = length (table !! 0)
-                        
+
+--sprawdz, czy rozwiazane per wiersz                      
 isSolvedRow [] = True
 isSolvedRow (x:xs)
   | (getState x) == UNDECIDED = False
   | otherwise = isSolvedRow xs
-
+--sprawdz, czy rozwiazane- calosc
 isSolved [] = True
 isSolved (x:xs)
   | (isSolvedRow x) == False = False
   | otherwise = isSolved xs                             
-
+--sprawdz ile wystepuje danego stanu
 countState :: Eq a => [a] -> a -> Int
 countState [] find = 0
 countState (x:xs) find 
   | find == x = 1 + (countState xs find)
   | otherwise = countState xs find
 
+--lita stanow
 stateList :: [(Int, Int)] -> Table -> [State]
 stateList [] _           = []
 stateList ((x,y):xs) table = getState (byInd table x y): stateList xs table
+--lista miejsc, ktore powinny zostac sprawdzone.. jeszcze nie wiem po co
+shallBeCheckedList :: Int -> Int -> Table -> [(Int, Int)]
+shallBeCheckedList x y table = [ (x+dx,y+dy) | dy <- [-2..2], dx <- [-2..2], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
 -- wygeneruj liste sąsiadów komórki
 neighbourhoodsList :: Int -> Int -> Table -> [(Int,Int)]
-neighbourhoodsList x y table = [ (x+dx,y+dy) | dy <- [-1..1], dx <- [-1..1], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
+neighbourhoodsList x y table = [ (x+dx,y+dy) | dx <- [-1..1], dy <- [-1..1], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
+--lista komorek w calej tablicy
 positionsList :: Table -> [(Int, Int)]
-positionsList table = [ (x,y) | y <- [0..(tableCols table)-1], x <- [0..(tableRows table) -1]]
-
+positionsList table = [ (x,y) |  y <- [0..(tableCols table)-1], x <- [0..(tableRows table) -1]]
+--rozwiaz jedna interacje
 solveOnePass :: Table -> [(Int, Int)] -> Table
 solveOnePass table [] = table
 solveOnePass table ((x,y):xs) = let val = getValue (byInd table x y)
                                 in if isValue val then let changedTable = checkIfToColour table x y
                                                         in solveOnePass changedTable xs
                                     else solveOnePass table xs
-
+--rozwiaz calosc
 solvePuzzle :: Table -> Table
 solvePuzzle table = let pos = positionsList table
                         solvingTable = solveOnePass table pos
@@ -144,11 +150,12 @@ main :: IO ()
 main = do putStrLn "Mosaic"
           -- filename <- getFileName
           -- puzzle <- readPuzzle filename
+          -- print puzzle
           -- let tablePuzzle = convertToTable puzzle
           print simplest
-          let pos = positionsList simplest
+          let pos = positionsList tableSimple
           print pos
-          let newtable = solveOnePass simplest pos
+          let newtable = solveOnePass tableSimple pos
           print newtable
           let nextable = solveOnePass newtable pos
           print nextable
