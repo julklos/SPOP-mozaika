@@ -16,6 +16,9 @@ getValue (C x y) = y
 fromJust :: Maybe Int -> Int
 fromJust (Just a) = a
 
+isValue :: Maybe Int -> Bool
+isValue Nothing = False
+isValue (Just _) = True
 
 -- type Table = [[Cell]]
 -- type Cell = Value
@@ -38,35 +41,31 @@ replace_elem xs row col x =
 
 v :: Value
 v = Just 5
-
+simplest :: Table
+simplest = [[C UNDECIDED (Just 1), C UNDECIDED (Just 1), C UNDECIDED (Just 1)],
+           [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing],
+           [C UNDECIDED (Just 1), C UNDECIDED (Just 1), C UNDECIDED (Just 1)]]
+tableSimple :: Table
+tableSimple = [[C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing],
+              [C UNDECIDED Nothing, C UNDECIDED (Just 0), C UNDECIDED (Just 2), C UNDECIDED Nothing],
+              [C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing]]
 table :: Table
-table = [[C UNDECIDED (Just 3), C WHITE Nothing, C UNDECIDED Nothing ],
-        [C UNDECIDED Nothing , C BLACK (Just 4) ,C UNDECIDED Nothing],
-        [C UNDECIDED Nothing , C UNDECIDED Nothing , C BLACK Nothing]]
--- table = [[(UNDECIDED, Nothing),(UNDECIDED, Nothing), (UNDECIDED,(Just 5)),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,5), (UNDECIDED,4), (UNDECIDED,Nothing)],
---                 [(UNDECIDED,Nothing),(UNDECIDED,5), (UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,6),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,5),(UNDECIDED, Nothing),(UNDECIDED, Nothing)],
---                 [(UNDECIDED,4), (UNDECIDED,Nothing ), (UNDECIDED,2), (UNDECIDED,Nothing), (UNDECIDED,5),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,4),(UNDECIDED,4)],
---                 [(UNDECIDED,Nothing ), (UNDECIDED,4),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,1),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,Nothing )],
---                 [(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,Nothing),(UNDECIDED,1),(UNDECIDED, Nothing),(UNDECIDED, Nothing), (UNDECIDED, 1), (UNDECIDED,3), (UNDECIDED,Nothing ),(UNDECIDED,5)],
---                 [(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing), (UNDECIDED,3),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,3), (UNDECIDED,6),(UNDECIDED, Nothing),(UNDECIDED, Nothing)],
---                 [(UNDECIDED,Nothing), (UNDECIDED,6), (UNDECIDED,7), (UNDECIDED,6),(UNDECIDED,Nothing),(UNDECIDED,4), (UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing)],
---                 [(UNDECIDED,Nothing ),(UNDECIDED,3),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,7),(UNDECIDED,7),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,3), (UNDECIDED,1)],
---                 [(UNDECIDED,Nothing ), (UNDECIDED,1), (UNDECIDED,3), (UNDECIDED,Nothing), (UNDECIDED,8),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,1), (UNDECIDED, Nothing)],
---                 [(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,3),(UNDECIDED, Nothing),(UNDECIDED, Nothing),(UNDECIDED,Nothing)]]
---pobrany tekst z łamigłowką przekonwertuj do tablicy
--- convertToTable :: [Char] -> [IO()]
--- convertToTable (x:xs) row table = setValue x : convertToTable xs row table
--- -- convertToTable [x] = print x
--- convertToTable ("[":xs)   _   _     = convertToTable xs [] []
--- convertToTable ("\"": xs) row table = convertToTable xs row table
--- convertToTable (",":xs)   row table = convertToTable xs row (table++row)
--- convertToTable ("]":xs)   row table = table++row
--- convertToTable (".":xs)   row table = convertToTable xs (row++[]) tables
--- convertToTable (x:xs)     row table = let val = Cell(UNDECIDED, x)
---                                       in convertToTable xs (row++ val) table
--- setValue x row = case x of
---                     "\""
--- convertToTable (x:xs) row  = setValue x row : convertToTable xs row
+-- table = [[C UNDECIDED (Just 3), C WHITE Nothing, C UNDECIDED Nothing ],
+--         [C UNDECIDED Nothing , C BLACK (Just 4) ,C UNDECIDED Nothing],
+--         [C UNDECIDED Nothing , C UNDECIDED Nothing , C BLACK Nothing]]
+
+
+table = [[C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 5), C UNDECIDED Nothing, C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 5) , C UNDECIDED (Just 4), C UNDECIDED Nothing],
+                [C UNDECIDED Nothing, C UNDECIDED (Just 5), C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 6),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 5),C UNDECIDED Nothing,C UNDECIDED Nothing],
+                [C UNDECIDED (Just 4), C UNDECIDED Nothing,C UNDECIDED (Just 2), C UNDECIDED Nothing,C UNDECIDED (Just 5),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 4), C UNDECIDED (Just 4)],
+                [C UNDECIDED Nothing, C UNDECIDED (Just 4),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1),C UNDECIDED Nothing, C UNDECIDED Nothing,C UNDECIDED Nothing],
+                [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1),C UNDECIDED Nothing,C UNDECIDED Nothing,  C UNDECIDED (Just 1), C UNDECIDED (Just 3), C UNDECIDED Nothing, C UNDECIDED (Just 5)],
+                [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),  C UNDECIDED (Just 6),C UNDECIDED Nothing,C UNDECIDED Nothing],
+                [C UNDECIDED Nothing, C UNDECIDED (Just 6), C UNDECIDED (Just 7), C UNDECIDED (Just 6),C UNDECIDED Nothing, C UNDECIDED (Just 4), C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing],
+                [C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 7), C UNDECIDED (Just 7),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),  C UNDECIDED (Just 1)],
+                [C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED (Just 3), C UNDECIDED Nothing,  C UNDECIDED (Just 8),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing],
+                [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing]]
+
 colourCells :: State -> [(Int, Int)] -> Table -> Table
 colourCells _ [] table = table
 colourCells color ((x,y):xs) table = let state = getState (byInd table x y)
@@ -86,8 +85,20 @@ checkIfToColour table row col = let neighbourhoods = neighbourhoodsList row col 
                                   in if val - blacks == unds then colourCells BLACK neighbourhoods table
                                      else if not_val - whites == unds then colourCells WHITE neighbourhoods table
                                           else table
-                                    
-                                
+tableRows :: Table -> Int
+tableRows table = length table
+tableCols :: Table -> Int
+tableCols table = length (table !! 0)
+                        
+isSolvedRow [] = True
+isSolvedRow (x:xs)
+  | (getState x) == UNDECIDED = False
+  | otherwise = isSolvedRow xs
+
+isSolved [] = True
+isSolved (x:xs)
+  | (isSolvedRow x) == False = False
+  | otherwise = isSolved xs                             
 
 countState :: Eq a => [a] -> a -> Int
 countState [] find = 0
@@ -100,7 +111,23 @@ stateList [] _           = []
 stateList ((x,y):xs) table = getState (byInd table x y): stateList xs table
 -- wygeneruj liste sąsiadów komórki
 neighbourhoodsList :: Int -> Int -> Table -> [(Int,Int)]
-neighbourhoodsList x y table = [ (x+dx,y+dy) | dy <- [-1..1], dx <- [-1..1], x+dx>=0, y+dy>=0, x+dx<(length table), y+dy<(length (table !! 0))]
+neighbourhoodsList x y table = [ (x+dx,y+dy) | dy <- [-1..1], dx <- [-1..1], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
+positionsList :: Table -> [(Int, Int)]
+positionsList table = [ (x,y) | y <- [0..(tableCols table)-1], x <- [0..(tableRows table) -1]]
+
+solveOnePass :: Table -> [(Int, Int)] -> Table
+solveOnePass table [] = table
+solveOnePass table ((x,y):xs) = let val = getValue (byInd table x y)
+                                in if isValue val then let changedTable = checkIfToColour table x y
+                                                        in solveOnePass changedTable xs
+                                    else solveOnePass table xs
+
+solvePuzzle :: Table -> Table
+solvePuzzle table = let pos = positionsList table
+                        solvingTable = solveOnePass table pos
+                        solved = isSolved solvingTable
+                    in if solved then solvingTable
+                        else solvePuzzle solvingTable
 -- pobierz łamigłówkę z pliku
 readPuzzle :: String -> IO [String]
 readPuzzle filename = do
@@ -112,17 +139,25 @@ getFileName :: IO String
 getFileName = do putStrLn "Podaj nazwę pliku, z którgo ma zostać pobrana łamigłówka:"
                  filename <- getLine --użytkownik wprowadza nazwę
                  return filename
-nth _ []       = Nothing
-nth 1 (x : _)  = Just x
-nth n (_ : xs) = nth (n - 1) xs
+
 main :: IO ()
 main = do putStrLn "Mosaic"
           -- filename <- getFileName
           -- puzzle <- readPuzzle filename
           -- let tablePuzzle = convertToTable puzzle
-          print table
-          let newtable = checkIfToColour table 0 0
+          print simplest
+          let pos = positionsList simplest
+          print pos
+          let newtable = solveOnePass simplest pos
           print newtable
+          let nextable = solveOnePass newtable pos
+          print nextable
+          let another = solveOnePass nextable pos
+          print another
+          let next = solveOnePass another pos
+          print next
+
+          -- let solvedPuzzle = solvePuzzle 
           -- let cols = length (table !! 0)
           -- let rows = length table
           -- let val =  table !! 1 !! 0
