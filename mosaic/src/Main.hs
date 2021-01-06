@@ -123,12 +123,25 @@ getFileName = do putStrLn "Podaj nazwę pliku, z którgo ma zostać pobrana łam
                  return filename
 toInt :: [Char] -> Int
 toInt x = read x :: Int
+
 convertToTable:: [String] -> Table
 convertToTable =  (map . map) parseCell
   where
     parseCell :: Char -> Cell
     parseCell '.' = C UNDECIDED Nothing
     parseCell ch = C UNDECIDED (Just (toInt [ch]))
+
+printMap:: Table -> IO()
+printMap = mapM_ (putStrLn . map toChar)
+  where
+    toChar :: Cell -> Char
+    toChar cell = let val = getValue cell
+                      state = getState cell
+                  in if (state == UNDECIDED && (isValue val)) then toEnum ( (fromJust val) + 48)
+                     else if state == UNDECIDED then '.'
+                     else if state == WHITE then '_'
+                     else 'X'
+                    
 
 main :: IO ()
 main = do putStrLn "Mosaic"
@@ -137,6 +150,7 @@ main = do putStrLn "Mosaic"
           print puzzle
           let convertedPuzzle = convertToTable puzzle
           print convertedPuzzle
+          printMap convertedPuzzle
           -- print simplest
           -- let pos = positionsList tableSimple
           -- print pos
