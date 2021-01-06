@@ -38,30 +38,6 @@ replace_elem xs row col x =
         modified_row = replace col x row_to_replace_in
     in replace row modified_row xs
 
-simplest :: Table
-simplest = [[C UNDECIDED (Just 1), C UNDECIDED (Just 1), C UNDECIDED (Just 1)],
-           [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing],
-           [C UNDECIDED (Just 1), C UNDECIDED (Just 1), C UNDECIDED (Just 1)]]
-tableSimple :: Table
-tableSimple = [[C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing],
-              [C UNDECIDED Nothing, C UNDECIDED (Just 0), C UNDECIDED (Just 2), C UNDECIDED Nothing],
-              [C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing]]
-table :: Table
--- table = [[C UNDECIDED (Just 3), C WHITE Nothing, C UNDECIDED Nothing ],
---         [C UNDECIDED Nothing , C BLACK (Just 4) ,C UNDECIDED Nothing],
---         [C UNDECIDED Nothing , C UNDECIDED Nothing , C BLACK Nothing]]
-
-
-table = [[C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 5), C UNDECIDED Nothing, C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED Nothing, C UNDECIDED (Just 5) , C UNDECIDED (Just 4), C UNDECIDED Nothing],
-                [C UNDECIDED Nothing, C UNDECIDED (Just 5), C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 6),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 5),C UNDECIDED Nothing,C UNDECIDED Nothing],
-                [C UNDECIDED (Just 4), C UNDECIDED Nothing,C UNDECIDED (Just 2), C UNDECIDED Nothing,C UNDECIDED (Just 5),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 4), C UNDECIDED (Just 4)],
-                [C UNDECIDED Nothing, C UNDECIDED (Just 4),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1),C UNDECIDED Nothing, C UNDECIDED Nothing,C UNDECIDED Nothing],
-                [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1),C UNDECIDED Nothing,C UNDECIDED Nothing,  C UNDECIDED (Just 1), C UNDECIDED (Just 3), C UNDECIDED Nothing, C UNDECIDED (Just 5)],
-                [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),  C UNDECIDED (Just 6),C UNDECIDED Nothing,C UNDECIDED Nothing],
-                [C UNDECIDED Nothing, C UNDECIDED (Just 6), C UNDECIDED (Just 7), C UNDECIDED (Just 6),C UNDECIDED Nothing, C UNDECIDED (Just 4), C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing],
-                [C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 7), C UNDECIDED (Just 7),C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),  C UNDECIDED (Just 1)],
-                [C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED (Just 3), C UNDECIDED Nothing,  C UNDECIDED (Just 8),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 1), C UNDECIDED Nothing],
-                [C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing, C UNDECIDED (Just 3),C UNDECIDED Nothing,C UNDECIDED Nothing,C UNDECIDED Nothing]]
 --pokoloruj na odpowiedni kolor
 colourCells :: State -> [(Int, Int)] -> Table -> Table
 colourCells _ [] table = table
@@ -145,24 +121,33 @@ getFileName :: IO String
 getFileName = do putStrLn "Podaj nazwę pliku, z którgo ma zostać pobrana łamigłówka:"
                  filename <- getLine --użytkownik wprowadza nazwę
                  return filename
+toInt :: [Char] -> Int
+toInt x = read x :: Int
+convertToTable:: [String] -> Table
+convertToTable =  (map . map) parseCell
+  where
+    parseCell :: Char -> Cell
+    parseCell '.' = C UNDECIDED Nothing
+    parseCell ch = C UNDECIDED (Just (toInt [ch]))
 
 main :: IO ()
 main = do putStrLn "Mosaic"
-          -- filename <- getFileName
-          -- puzzle <- readPuzzle filename
-          -- print puzzle
-          -- let tablePuzzle = convertToTable puzzle
-          print simplest
-          let pos = positionsList tableSimple
-          print pos
-          let newtable = solveOnePass tableSimple pos
-          print newtable
-          let nextable = solveOnePass newtable pos
-          print nextable
-          let another = solveOnePass nextable pos
-          print another
-          let next = solveOnePass another pos
-          print next
+          filename <- getFileName
+          puzzle <- readPuzzle filename
+          print puzzle
+          let convertedPuzzle = convertToTable puzzle
+          print convertedPuzzle
+          -- print simplest
+          -- let pos = positionsList tableSimple
+          -- print pos
+          -- let newtable = solveOnePass tableSimple pos
+          -- print newtable
+          -- let nextable = solveOnePass newtable pos
+          -- print nextable
+          -- let another = solveOnePass nextable pos
+          -- print another
+          -- let next = solveOnePass another pos
+          -- print next
 
           -- let solvedPuzzle = solvePuzzle 
           -- let cols = length (table !! 0)
