@@ -46,19 +46,27 @@ colourCells color ((x,y):xs) table = let state = getState (byInd table x y)
                                         else let val = getValue (byInd table x y)
                                                  modifiedTable = replace_elem table x y (C color val)
                                              in colourCells color xs modifiedTable
---sprawdz na jaki kolor pokolorowac
-checkIfToColour :: Table -> Int -> Int -> Table
-checkIfToColour table row col = let neighbourhoods = neighbourhoodsList row col table
-                                    states = stateList neighbourhoods table
-                                    whites = countState states WHITE
-                                    blacks = countState states BLACK
-                                    unds = countState states UNDECIDED
-                                    val = fromJust (getValue (byInd table row col))
-                                    not_val = length states - val
-                                    next_table = colourCells WHITE neighbourhoods table
-                                  in if val - blacks == unds then colourCells BLACK neighbourhoods table
-                                     else if not_val - whites <= unds then colourCells WHITE neighbourhoods table
-                                          else table
+
+--sprawdz tablica jest poprawna
+checkCorrectness :: Table -> [(Int,Int)]-> Bool
+checkCorrectness _ [] = True
+checkCorrectness table ((x,y):xs)
+  | isElementCorrect table x y == False = False
+  | otherwise = checkCorrectness table xs
+
+isElementCorrect :: Table -> Int -> Int -> Bool
+isElementCorrect table row col = let cell = byInd table row col
+                                     cells_val = getValue cell
+                                  in if not $ isValue cells_val then True
+                                     else let val = fromJust cells_val
+                                              neighbourhoods = neighbourhoodsList row col table
+                                              states = stateList neighbourhoods table
+                                              whites = countState states WHITE
+                                              blacks = countState states BLACK
+                                          in blacks <= val && whites <= length states - val
+                                              
+
+
 --oblicz liczbe wierszy
 tableRows :: Table -> Int
 tableRows table = length table
@@ -96,20 +104,28 @@ neighbourhoodsList x y table = [ (x+dx,y+dy) | dx <- [-1..1], dy <- [-1..1], x+d
 --lista komorek w calej tablicy
 positionsList :: Table -> [(Int, Int)]
 positionsList table = [ (x,y) |  y <- [0..(tableCols table)-1], x <- [0..(tableRows table) -1]]
---rozwiaz jedna interacje
-solveOnePass :: Table -> [(Int, Int)] -> Table
-solveOnePass table [] = table
-solveOnePass table ((x,y):xs) = let val = getValue (byInd table x y)
-                                in if isValue val then let changedTable = checkIfToColour table x y
-                                                        in solveOnePass changedTable xs
-                                    else solveOnePass table xs
---rozwiaz calosc
-solvePuzzle :: Table -> Table
+-- --rozwiaz jedna interacje
+solveOnePass :: Table -> [(Int, Int)] -> Maybe Table
+solveOnePass table [] = Just table
+solveOnePass table ((x,y):xs) = let correct = checkCorrectness table (positionsList table)
+                                    solved = isSolved table
+                                in if not correct  then Nothing
+                                   else if solved then Just table
+                                   else let (table1, table2) = setTwoNextTables table x y
+                                        in case solveOnePass table1 xs of
+                                          Just res -> Just res
+                                          Nothing  -> solveOnePass table2 xs
+
+setTwoNextTables:: Table -> Int -> Int -> (Table, Table)
+setTwoNextTables table x y = let cell = byInd table x y
+                                 state = getState cell
+                                 val = getValue cell
+                              in if state == UNDECIDED then ( replace_elem table x y (C WHITE val), replace_elem table x y (C BLACK val))
+                                 else (table, table)
+solvePuzzle :: Table -> Maybe Table
 solvePuzzle table = let pos = positionsList table
-                        solvingTable = solveOnePass table pos
-                        solved = isSolved solvingTable
-                    in if solved then solvingTable
-                        else solvePuzzle solvingTable
+                    in solveOnePass table pos
+
 -- pobierz łamigłówkę z pliku
 readPuzzle :: String -> IO [String]
 readPuzzle filename = do
@@ -121,16 +137,17 @@ getFileName :: IO String
 getFileName = do putStrLn "Podaj nazwę pliku, z którgo ma zostać pobrana łamigłówka:"
                  filename <- getLine --użytkownik wprowadza nazwę
                  return filename
+-- znak z pliku to cyfry
 toInt :: [Char] -> Int
 toInt x = read x :: Int
-
+-- konwersja stringa z pliku to tablicy
 convertToTable:: [String] -> Table
 convertToTable =  (map . map) parseCell
   where
     parseCell :: Char -> Cell
     parseCell '.' = C UNDECIDED Nothing
     parseCell ch = C UNDECIDED (Just (toInt [ch]))
-
+-- wyswietlenie wynikow
 printMap:: Table -> IO()
 printMap = mapM_ (putStrLn . map toChar)
   where
@@ -149,8 +166,10 @@ main = do putStrLn "Mosaic"
           puzzle <- readPuzzle filename
           print puzzle
           let convertedPuzzle = convertToTable puzzle
-          print convertedPuzzle
-          printMap convertedPuzzle
+          case solvePuzzle convertedPuzzle of
+              Just b -> printMap b
+              _ -> putStrLn "Nie może być rozwiązane"
+          
           -- print simplest
           -- let pos = positionsList tableSimple
           -- print pos
