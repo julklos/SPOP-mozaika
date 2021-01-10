@@ -6,39 +6,73 @@ type Value = Maybe Int
 data Cell = C State Value deriving Show 
 type Table = [[Cell]]
 
-getState :: Cell -> State
-getState (C x y) = x
-
-getValue :: Cell -> Value
-getValue (C x y) = y
-
-
 fromJust :: Maybe Int -> Int
 fromJust (Just a) = a
 
+{------------------------------------------------------------------------
+ -  @brief  Funkcja zwracająca stan z typu danych Cell
+ -  @param  Cell  - komórka, z której pobieramy stan
+ -  @retval State - stan danej komórki
+ ------------------------------------------------------------------------}
+getState :: Cell -> State
+getState (C x y) = x
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja zwracająca wartość z typu danych Cell
+ -  @param  Cell  - komórka, z której pobieramy wartość
+ -  @retval Value - wartość danej komórki
+ ------------------------------------------------------------------------}
+getValue :: Cell -> Value
+getValue (C x y) = y
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja sprawdzająca czy parametr ma wartość
+ -  @param  Maybe Int 
+ -  @retval Bool      - True jeśli ma wartość, w przeciwnym wypadku False
+ ------------------------------------------------------------------------}
 isValue :: Maybe Int -> Bool
 isValue Nothing = False
 isValue (Just _) = True
 
--- type Table = [[Cell]]
--- type Cell = Value
-
+{------------------------------------------------------------------------
+ -  @brief  Funkcja zwracająca komórkę znajdującą się pod odpowiednimi  
+ -          indeksami w tablicy.
+ -  @param  Table - tablica, z której pobierana jest komórka
+ -  @param  Int   - indeks X
+ -  @param  Int   - indeks Y
+ -  @retval Cell  - odpowiednia komórka z tablicy
+ ------------------------------------------------------------------------}
 byInd :: Table -> Int -> Int -> Cell
 byInd table row col = table !! row !! col
 
+{------------------------------------------------------------------------
+ -  @brief  Funkcja zastępująca element o podanym indeksie
+ -  @param  Int - indeks elementu, który zastępujemy
+ -  @param  a   - nowa wartość zastępowanego elementu
+ -  @param  [a] - tablica, w której element zastępujemy
+ -  @retval [a] - tablica z zamienionym elementem 
+ ------------------------------------------------------------------------}
 replace :: Int ->  a -> [a] -> [a]
 replace _ _ [] = []
 replace n newVal (x:xs)
   | n == 0 = newVal:xs
   | otherwise = x:replace (n-1) newVal xs
 
+{------------------------------------------------------------------------
+ -  @brief  Funkcja zastępująca komórkę tablicy o podanym indeksie nową komórką
+ -  @param  Table - tablica
+ -  @param  Int   - indeks komórki tablicy (mozaiki)
+ -  @param  Int   - indeks komórki tablicy (mozaiki)
+ -  @param  Cell  - komórka do podstawienia w odpowiednie miejsce w tablicy
+ -  @retval Table - tablica z podmienioną komórką 
+ ------------------------------------------------------------------------}
 replace_elem :: Table -> Int -> Int -> Cell -> Table
 replace_elem xs row col x =
     let row_to_replace_in = xs !! row
         modified_row = replace col x row_to_replace_in
     in replace row modified_row xs
 
---pokoloruj na odpowiedni kolor
+-- pokoloruj na odpowiedni kolor 
 colourCells :: State -> [(Int, Int)] -> Table -> Table
 colourCells _ [] table = table
 colourCells color ((x,y):xs) table = let state = getState (byInd table x y)
@@ -47,13 +81,24 @@ colourCells color ((x,y):xs) table = let state = getState (byInd table x y)
                                                  modifiedTable = replace_elem table x y (C color val)
                                              in colourCells color xs modifiedTable
 
---sprawdz tablica jest poprawna
+{------------------------------------------------------------------------
+ -  @brief  Funkcja sprawdzająca poprawnośC rozwiązania pól mozaiki
+ -  @param  Tablica     - sprawdzana tablica
+ -  @param  [(Int,Int)] - tablica indeksów, które sprawdzamy
+ -  @retval Bool        - True jeśli pola poprawne, False w przeciwnym wypadku
+ ------------------------------------------------------------------------}
 checkCorrectness :: Table -> [(Int,Int)]-> Bool
 checkCorrectness _ [] = True
 checkCorrectness table ((x,y):xs)
   | isElementCorrect table x y == False = False
   | otherwise = checkCorrectness table xs
 
+{------------------------------------------------------------------------
+ -  @brief  Funkcja sprawdzająca poprawność konkretnego pola mozaiki
+ -  @param  Int   - sprawdzana tablica
+ -  @param  Int   - tablica indeksów, które sprawdzamy
+ -  @retval Bool  - True jeśli pole poprawne, False w przeciwnym wypadku
+ ------------------------------------------------------------------------}
 isElementCorrect :: Table -> Int -> Int -> Bool
 isElementCorrect table row col = let cell = byInd table row col
                                      cells_val = getValue cell
@@ -66,45 +111,97 @@ isElementCorrect table row col = let cell = byInd table row col
                                           in blacks <= val && whites <= length states - val
                                               
 
-
---oblicz liczbe wierszy
+{------------------------------------------------------------------------
+ -  @brief  Funkcja obliczająca liczbę wierszy w tablicy
+ -  @param  Table   - tablica reprezentujaca mozaikę, 
+ -  @retval Int     - liczba wierszy w tablicy
+ ------------------------------------------------------------------------}
 tableRows :: Table -> Int
 tableRows table = length table
---oblicz liczbe kolumn
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja obliczająca liczbę kolumn w tablicy
+ -  @param  Table   - tablica reprezentujaca mozaikę, 
+ -  @retval Int     - liczba kolumn w tablicy
+ ------------------------------------------------------------------------}
 tableCols :: Table -> Int
 tableCols table = length (table !! 0)
-
---sprawdz, czy rozwiazane per wiersz                      
+ 
+{------------------------------------------------------------------------
+ -  @brief  Funkcja sprawdzająca czy dany wiersz został rozwiązany
+ -          (czy nie ma ani jednego pola UNDECIDED)
+ -  @param  []    - tablica do sprawdzenia 
+ -  @retval Bool  - False jeśli w wieszu występuje choć jedno pole UNDECIDED 
+ -                  True w przeciwnym wypadku
+ ------------------------------------------------------------------------}        
 isSolvedRow [] = True
 isSolvedRow (x:xs)
   | (getState x) == UNDECIDED = False
   | otherwise = isSolvedRow xs
---sprawdz, czy rozwiazane- calosc
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja sprawdzająca czy cała mozaika została rozwiązana
+ -          (czy nie ma ani jednego pola UNDECIDED)
+ -  @param  []    - tablica do sprawdzenia 
+ -  @retval Bool  - False jeśli występuje choć jedno pole UNDECIDED 
+ -                  True w przeciwnym wypadku
+ ------------------------------------------------------------------------}      
 isSolved [] = True
 isSolved (x:xs)
   | (isSolvedRow x) == False = False
   | otherwise = isSolved xs                             
---sprawdz ile wystepuje danego stanu
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja obliczająca liczbę wystąpień danego stanu w tablicy
+ -  @param  []    - tablica do sprawdzenia 
+ -  @param  State - stan, którego wystąpienia chcemy zliczać 
+ -  @retval Int   - liczba wystąpień stanu  
+ ------------------------------------------------------------------------}      
 countState :: Eq a => [a] -> a -> Int
 countState [] find = 0
 countState (x:xs) find 
   | find == x = 1 + (countState xs find)
   | otherwise = countState xs find
 
---lita stanow
+{------------------------------------------------------------------------
+ -  @brief  Funkcja agregująca stany pól tablicy o podanych indeksach 
+ -  @param  [(Int, Int)]  - tablica indeksów pól do sprawdzenia
+ -  @param  Table         - tablica (mozaika)  
+ -  @retval [State]       - tablica stanów pól o indeksach podanych w wywołaniu
+ ------------------------------------------------------------------------}   
 stateList :: [(Int, Int)] -> Table -> [State]
 stateList [] _           = []
 stateList ((x,y):xs) table = getState (byInd table x y): stateList xs table
+
 --lista miejsc, ktore powinny zostac sprawdzone.. jeszcze nie wiem po co
 shallBeCheckedList :: Int -> Int -> Table -> [(Int, Int)]
 shallBeCheckedList x y table = [ (x+dx,y+dy) | dy <- [-2..2], dx <- [-2..2], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
--- wygeneruj liste sąsiadów komórki
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja generująca sąsiadów dla konkretnej komórki z tabeli 
+ -  @param  Int         - indeks tabeli 
+ -  @param  Int         - indeks tabeli
+ -  @param  Table       - tablica (mozaika)  
+ -  @retval [(Int,Int)] - tablica indeksów komórek sąsiadujących z komórką 
+ -                        sprawdzaną
+ ------------------------------------------------------------------------}   
 neighbourhoodsList :: Int -> Int -> Table -> [(Int,Int)]
 neighbourhoodsList x y table = [ (x+dx,y+dy) | dx <- [-1..1], dy <- [-1..1], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
---lista komorek w calej tablicy
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja znajdująca wszystkie komórki w tablicy 
+ -  @param  Table       - tablica (mozaika)  
+ -  @retval [(Int,Int)] - indeksy komórek znajdujących się w tablicy
+ ------------------------------------------------------------------------}   
 positionsList :: Table -> [(Int, Int)]
 positionsList table = [ (x,y) |  y <- [0..(tableCols table)-1], x <- [0..(tableRows table) -1]]
--- --rozwiaz jedna interacje
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja przeprowadzająca jedna iteracje obliczeń na tablicy
+ -  @param  Table       - tablica (mozaika)  
+ -  @param  [(Int,Int)] - tablica indeksów komórek tablicy 
+ -  @retval Maybe Table - tablica po jednej iteracji obliczeń
+ ------------------------------------------------------------------------}   
 solveOnePass :: Table -> [(Int, Int)] -> Maybe Table
 solveOnePass table [] = Just table
 solveOnePass table ((x,y):xs) = let correct = checkCorrectness table (positionsList table)
@@ -122,32 +219,62 @@ setTwoNextTables table x y = let cell = byInd table x y
                                  val = getValue cell
                               in if state == UNDECIDED then ( replace_elem table x y (C WHITE val), replace_elem table x y (C BLACK val))
                                  else (table, table)
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja rozwiązująca mozaikę
+ -  @param  Table       - tablica z danymi o mazaice,
+ -  @retval Maybe Table - pokolorowana tablica (mozaika)
+ ------------------------------------------------------------------------}
 solvePuzzle :: Table -> Maybe Table
 solvePuzzle table = let pos = positionsList table
                     in solveOnePass table pos
 
--- pobierz łamigłówkę z pliku
+{------------------------------------------------------------------------
+ -  @brief  Funkcja wczytująca mozaike z pliku
+ -  @param  String  - ścieżka do pliku z mozaiką, 
+ ------------------------------------------------------------------------}
 readPuzzle :: String -> IO [String]
 readPuzzle filename = do
   contents <- readFile filename
   let puzzle = read contents :: [String]
   return puzzle
--- wprowadź ścieżkę do pliku, z którego ma zostać pobrana łamigłówka
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja pobierająca ścieżkę do pliku, z którego ma zostać
+ -          pobrana łamigłówka
+ ------------------------------------------------------------------------}
 getFileName :: IO String
-getFileName = do putStrLn "Podaj nazwę pliku, z którgo ma zostać pobrana łamigłówka:"
+getFileName = do putStrLn "Podaj nazwe pliku, z ktorgo ma zostac pobrana lamiglowka:"
                  filename <- getLine --użytkownik wprowadza nazwę
                  return filename
--- znak z pliku to cyfry
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja konwertująca znaki na liczby
+ -  @param  [Char]  - tablica znaków, 
+ -  @retval Int     - liczba
+ ------------------------------------------------------------------------}
 toInt :: [Char] -> Int
 toInt x = read x :: Int
--- konwersja stringa z pliku to tablicy
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja konwertująca dane tekstowe do struktury Table
+ -  @param  [String]  - tablica stringów, z danymi tekstowymi określającymi
+ -                    - daną mozaikę 
+ -  @retval Table     - struktura Table, przechowująca informację dotyczące
+ -                    - mozaiki
+ ------------------------------------------------------------------------}
 convertToTable:: [String] -> Table
 convertToTable =  (map . map) parseCell
   where
     parseCell :: Char -> Cell
     parseCell '.' = C UNDECIDED Nothing
     parseCell ch = C UNDECIDED (Just (toInt [ch]))
--- wyswietlenie wynikow
+
+
+{------------------------------------------------------------------------
+ -  @brief  Funkcja wyświetlająca tablicę (mozaikę) w konsoli
+ -  @param  Table  - tablica, którą chcemy wyświetlić
+ ------------------------------------------------------------------------}
 printMap:: Table -> IO()
 printMap = mapM_ (putStrLn . map toChar)
   where
@@ -160,6 +287,9 @@ printMap = mapM_ (putStrLn . map toChar)
                      else 'X'
                     
 
+{------------------------------------------------------------------------
+ -  @brief  Funkcja główna
+ ------------------------------------------------------------------------}
 main :: IO ()
 main = do putStrLn "Mosaic"
           filename <- getFileName
@@ -169,36 +299,3 @@ main = do putStrLn "Mosaic"
           case solvePuzzle convertedPuzzle of
               Just b -> printMap b
               _ -> putStrLn "Nie może być rozwiązane"
-          
-          -- print simplest
-          -- let pos = positionsList tableSimple
-          -- print pos
-          -- let newtable = solveOnePass tableSimple pos
-          -- print newtable
-          -- let nextable = solveOnePass newtable pos
-          -- print nextable
-          -- let another = solveOnePass nextable pos
-          -- print another
-          -- let next = solveOnePass another pos
-          -- print next
-
-          -- let solvedPuzzle = solvePuzzle 
-          -- let cols = length (table !! 0)
-          -- let rows = length table
-          -- let val =  table !! 1 !! 0
-          -- print (getValue val)
-          -- print( byInd table 1 0)
-          -- let newtable = replace_elem table 1 0 (C UNDECIDED (Just 3))
-          -- print (byInd table 1 0)
-          -- print (byInd newtable 1 0)
-          -- print (rows, cols)
-          -- let neighbourhoods = neighbourhoodsList 1 1 table
-          -- let states = stateList neighbourhoods table
-          -- let whites = countState states WHITE
-          -- let blacks = countState states BLACK
-          -- let unds = countState states UNDECIDED
-          -- let val = fromJust (getValue (byInd table 1 1))
-          -- let not_val = length states - val
-          -- print (val, not_val, length states)
-          --solvedPuzzle <- solve tablePuzzle
-          -- print puzzle
