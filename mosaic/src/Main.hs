@@ -72,14 +72,6 @@ replace_elem xs row col x =
         modified_row = replace col x row_to_replace_in
     in replace row modified_row xs
 
--- pokoloruj na odpowiedni kolor 
-colourCells :: State -> [(Int, Int)] -> Table -> Table
-colourCells _ [] table = table
-colourCells color ((x,y):xs) table = let state = getState (byInd table x y)
-                                     in if state == BLACK then colourCells color xs table
-                                        else let val = getValue (byInd table x y)
-                                                 modifiedTable = replace_elem table x y (C color val)
-                                             in colourCells color xs modifiedTable
 
 {------------------------------------------------------------------------
  -  @brief  Funkcja sprawdzająca poprawnośC rozwiązania pól mozaiki
@@ -173,10 +165,6 @@ stateList :: [(Int, Int)] -> Table -> [State]
 stateList [] _           = []
 stateList ((x,y):xs) table = getState (byInd table x y): stateList xs table
 
---lista miejsc, ktore powinny zostac sprawdzone.. jeszcze nie wiem po co
-shallBeCheckedList :: Int -> Int -> Table -> [(Int, Int)]
-shallBeCheckedList x y table = [ (x+dx,y+dy) | dy <- [-2..2], dx <- [-2..2], x+dx>=0, y+dy>=0, x+dx<(tableRows table), y+dy<(tableCols table)]
-
 {------------------------------------------------------------------------
  -  @brief  Funkcja generująca sąsiadów dla konkretnej komórki z tabeli 
  -  @param  Int         - indeks tabeli 
@@ -212,7 +200,13 @@ solveOnePass table ((x,y):xs) = let correct = checkCorrectness table (positionsL
                                         in case solveOnePass table1 xs of
                                           Just res -> Just res
                                           Nothing  -> solveOnePass table2 xs
-
+{------------------------------------------------------------------------
+ -  @brief  Funkcja tworząca dwie możliwe nowe rozwiązania poprzez podstawiene w komórce WHITE i BLACK
+ -  @param  Table       - tablica (mozaika)  
+ -  @param  Int         - indeks wiersza
+ -  @param  Int         - indeks kolu,my
+ -  @retval (Table, Table) - możliwe rozwiązania
+ ------------------------------------------------------------------------}   
 setTwoNextTables:: Table -> Int -> Int -> (Table, Table)
 setTwoNextTables table x y = let cell = byInd table x y
                                  state = getState cell
